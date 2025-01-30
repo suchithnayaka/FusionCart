@@ -1,4 +1,4 @@
-package com.example.fusionCart
+package com.example.fusioncart
 
 import org.junit.Test
 

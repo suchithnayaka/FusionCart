@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -22,10 +23,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.fusioncart.FusionCartApplication
 import com.example.fusioncart.model.MenuItem
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +39,7 @@ fun MenuScreen(
     var menuItems by remember { mutableStateOf<List<MenuItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var searchQuery by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     Column(modifier = modifier.fillMaxSize()) {
         // Top Bar
@@ -89,26 +91,30 @@ fun MenuScreen(
     }
 
     LaunchedEffect(restaurantId) {
-        val database = FirebaseDatabase.getInstance()
-        val menuRef = database.getReference("Menu").child(restaurantId)
-        
-        menuRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val items = mutableListOf<MenuItem>()
-                snapshot.children.forEach { child ->
-                    child.getValue(MenuItem::class.java)?.let { item ->
-                        items.add(item)
+        try {
+            val menuRef = FusionCartApplication.database.getReference("Menu").child(restaurantId)
+            
+            menuRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val items = mutableListOf<MenuItem>()
+                    snapshot.children.forEach { child ->
+                        child.getValue(MenuItem::class.java)?.let { item ->
+                            items.add(item)
+                        }
                     }
+                    menuItems = items.filterNotNull()
+                    isLoading = false
                 }
-                menuItems = items.filterNotNull()
-                isLoading = false
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("MenuScreen", "Error loading menu: ${error.message}")
-                isLoading = false
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("MenuScreen", "Error loading menu: ${error.message}")
+                    isLoading = false
+                }
+            })
+        } catch (e: Exception) {
+            Log.e("MenuScreen", "Error loading menu: ${e.message}")
+            isLoading = false
+        }
     }
 }
 

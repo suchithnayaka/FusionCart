@@ -23,10 +23,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.fusioncart.FusionCartApplication
 import com.example.fusioncart.model.Restaurant
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 @Composable
@@ -40,10 +40,7 @@ fun RestaurantListScreen(
 
     LaunchedEffect(Unit) {
         try {
-            val database = FirebaseDatabase.getInstance()
-            Log.d("RestaurantListScreen", "Database instance created")
-            
-            val restaurantsRef = database.getReference("Restaurants")
+            val restaurantsRef = FusionCartApplication.database.getReference("Restaurants")
             Log.d("RestaurantListScreen", "Getting reference to Restaurants")
             
             restaurantsRef.addValueEventListener(object : ValueEventListener {
