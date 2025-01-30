@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "723127967762",
+    "firebase_url": "https://fusioncart-4e5bd-default-rtdb.firebaseio.com",
+    "project_id": "fusioncart-4e5bd",
+    "storage_bucket": "fusioncart-4e5bd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:723127967762:android:f0ecc35b29a850bfbd78cb",
+        "android_client_info": {
+          "package_name": "com.example.fusioncart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDM7IVG8LNn7VlXZX1no5oD2-kzGIvQ2zE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
