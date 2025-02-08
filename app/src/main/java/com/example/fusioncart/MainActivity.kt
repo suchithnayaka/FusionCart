@@ -35,13 +35,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             FusionCartTheme {
                 var isLoggedIn by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser != null) }
-                var selectedRestaurant by remember { mutableStateOf<String?>(null) }
                 val navController = rememberNavController()
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        if (isLoggedIn && selectedRestaurant == null) {
+                        if (isLoggedIn) {
                             BottomNavBar(navController)
                         }
                     }
@@ -54,29 +53,36 @@ class MainActivity : ComponentActivity() {
                     } else {
                         NavHost(
                             navController = navController,
-                            startDestination = Screen.Home.route,
+                            startDestination = "home",
                             modifier = Modifier.padding(innerPadding)
                         ) {
-                            composable(Screen.Home.route) {
-                                if (selectedRestaurant != null) {
-                                    MenuScreen(
-                                        restaurantId = selectedRestaurant!!,
-                                        onBackClick = { selectedRestaurant = null }
-                                    )
-                                } else {
-                                    RestaurantListScreen(
-                                        onRestaurantClick = { restaurantName -> 
-                                            selectedRestaurant = restaurantName
-                                        }
-                                    )
-                                }
+                            composable("home") {
+                                HomeScreen(
+                                    onRestaurantClick = { restaurant ->
+                                        navController.navigate("menu/${restaurant.id}/${restaurant.name}")
+                                    }
+                                )
+                            }
+                            
+                            composable(
+                                route = "menu/{restaurantId}/{restaurantName}",
+                            ) { backStackEntry ->
+                                val restaurantId = backStackEntry.arguments?.getString("restaurantId") ?: return@composable
+                                val restaurantName = backStackEntry.arguments?.getString("restaurantName") ?: return@composable
+                                MenuScreen(
+                                    restaurantId = restaurantId,
+                                    restaurantName = restaurantName,
+                                    onBackClick = {
+                                        navController.popBackStack()
+                                    }
+                                )
                             }
                             
                             composable(Screen.Profile.route) {
                                 ProfileScreen(
                                     onSignOut = {
                                         isLoggedIn = false
-                                        navController.navigate(Screen.Home.route) {
+                                        navController.navigate("home") {
                                             popUpTo(0) { inclusive = true }
                                         }
                                     }

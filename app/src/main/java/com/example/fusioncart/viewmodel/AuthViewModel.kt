@@ -60,9 +60,14 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun signUpWithEmail(email: String, password: String) {
+    fun signUpWithEmail(email: String, password: String, confirmPassword: String) {
         viewModelScope.launch {
             try {
+                if (password != confirmPassword) {
+                    _authState.value = AuthState.Error("Passwords do not match")
+                    return@launch
+                }
+                
                 _authState.value = AuthState.Loading
                 auth.createUserWithEmailAndPassword(email, password).await()
                 _authState.value = AuthState.Success

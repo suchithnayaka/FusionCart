@@ -31,7 +31,9 @@ fun LoginScreen(
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var isSignUp by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
     
     val authState by viewModel.authState.collectAsState()
     
@@ -84,22 +86,59 @@ fun LoginScreen(
         
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { 
+                password = it
+                if (isSignUp && confirmPassword.isNotEmpty()) {
+                    passwordError = if (it != confirmPassword) "Passwords do not match" else null
+                }
+            },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
+                imeAction = if (isSignUp) ImeAction.Next else ImeAction.Done
             ),
+            isError = passwordError != null,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(bottom = if (isSignUp) 8.dp else 16.dp)
         )
+        
+        if (isSignUp) {
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { 
+                    confirmPassword = it
+                    passwordError = if (it != password) "Passwords do not match" else null
+                },
+                label = { Text("Confirm Password") },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                isError = passwordError != null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
+            
+            if (passwordError != null) {
+                Text(
+                    text = passwordError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                )
+            }
+        }
         
         Button(
             onClick = {
                 if (isSignUp) {
-                    viewModel.signUpWithEmail(email, password)
+                    viewModel.signUpWithEmail(email, password, confirmPassword)
                 } else {
                     viewModel.signInWithEmail(email, password)
                 }
@@ -107,7 +146,9 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            enabled = email.isNotEmpty() && password.isNotEmpty() && authState !is AuthState.Loading
+            enabled = email.isNotEmpty() && password.isNotEmpty() && 
+                    (!isSignUp || (isSignUp && confirmPassword.isNotEmpty() && passwordError == null)) && 
+                    authState !is AuthState.Loading
         ) {
             if (authState is AuthState.Loading) {
                 CircularProgressIndicator(
